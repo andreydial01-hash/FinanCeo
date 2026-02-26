@@ -114,7 +114,9 @@ export default function App() {
   const makePayment = (debtId, amount) => {
     updatePortfolio(p => {
       const debt = p.debts.find(d => d.id===debtId); if (!debt) return p;
-      const pay = Math.min(+amount, debt.remaining);
+      const totalPlan = debt.plan.reduce((s,r)=>s+r.payment, 0);
+      const realPendiente = Math.max(totalPlan - debt.paid, 0);
+      const pay = Math.min(+amount, realPendiente);
       const today = new Date().toISOString().slice(0,10);
       return {
         ...p,
@@ -533,7 +535,8 @@ export default function App() {
                       const totalConIntereses = d.plan.reduce((s,r)=>s+r.payment,0);
                       const pendiente = Math.max(totalConIntereses - d.paid, 0);
                       const pct = Math.min((d.paid/totalConIntereses)*100, 100);
-                      const liquidada = d.remaining === 0;
+                      const totalPlanDebt = d.plan.reduce((s,r)=>s+r.payment,0);
+                      const liquidada = d.paid >= totalPlanDebt - 0.005;
                       return (
                         <div key={d.id} className="debt-card" onClick={()=>setSelectedDebt(d)}>
                           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12 }}>
@@ -750,9 +753,9 @@ function DebtModal({ debt:d, onClose, onPay, onDelete, fmt, fmtDate }) {
             ))}
           </div>
         </div>
-        {d.remaining>0 ? (
+        {pendiente > 0.005 ? (
           <div style={{ background:"#0d0d17",border:"1px solid #1e1e2e",borderRadius:12,padding:16,marginBottom:20 }}>
-            <div style={{ fontSize:13,fontWeight:600,color:"#94a3b8",marginBottom:10 }}>Registrar abono <span style={{ fontSize:11,color:"#334155",marginLeft:8 }}>· Sugerido: {fmt(d.payment)}</span></div>
+            <div style={{ fontSize:13,fontWeight:600,color:"#94a3b8",marginBottom:10 }}>Registrar abono <span style={{ fontSize:11,color:"#334155",marginLeft:8 }}>· Sugerido: {fmt(Math.min(d.payment, pendiente))}</span></div>
             <div style={{ display:"flex",gap:10 }}>
               <input type="number" value={payAmt} onChange={e=>setPayAmt(e.target.value)} placeholder="Monto" style={{ flex:1 }}/>
               <button className="btn-primary" onClick={()=>onPay(d.id,payAmt)}>Abonar</button>
