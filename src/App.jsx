@@ -200,6 +200,7 @@ export default function App() {
           .sidebar.open{left:0!important}
           .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:130;backdrop-filter:blur(3px)}
           .main-content{padding:20px 16px!important;padding-top:calc(60px + env(safe-area-inset-top))!important}
+          .sidebar-logo{padding-left:52px!important}
           .grid2{grid-template-columns:1fr!important}
           .stats-grid{grid-template-columns:1fr 1fr!important}
           .chart-grid{grid-template-columns:1fr!important}
@@ -243,7 +244,7 @@ export default function App() {
       <div style={{ display:"flex", minHeight:"100vh" }}>
         {/* ── SIDEBAR ── */}
         <div className={`sidebar ${sidebarOpen?"open":""}`} style={{ width:240, background:"#0d0d17", borderRight:"1px solid #1a1a2a", padding:"28px 14px", display:"flex", flexDirection:"column", gap:4, flexShrink:0 }}>
-          <div style={{ padding:"0 8px 20px" }}>
+          <div className="sidebar-logo" style={{ padding:"0 8px 20px" }}>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:900, background:"linear-gradient(135deg,#a78bfa,#60a5fa)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>FinanceOS</div>
             <div style={{ fontSize:11, color:"#334155", marginTop:2 }}>Control financiero inteligente</div>
           </div>
@@ -282,6 +283,10 @@ export default function App() {
           <div style={{ marginTop:"auto", padding:"16px 10px", borderTop:"1px solid #1a1a2a" }}>
             <div style={{ fontSize:10, color:"#334155", textTransform:"uppercase", letterSpacing:".06em" }}>Balance · {portfolio.name}</div>
             <div style={{ fontSize:22, fontWeight:700, color:balance>=0?"#4ade80":"#f87171", marginTop:6 }}>{fmt(balance)}</div>
+          </div>
+          {/* Powered by */}
+          <div style={{ padding:"10px 10px 6px", textAlign:"center" }}>
+            <div style={{ fontSize:9, color:"#1e2a3a", letterSpacing:".12em", textTransform:"uppercase", fontWeight:500 }}>Powered by Nomantica</div>
           </div>
         </div>
 
