@@ -195,11 +195,11 @@ export default function App() {
         .pay-card:hover{border-color:#2d2d4d}
         .alert-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:12px;margin-bottom:20px;animation:slideIn .4s ease}
         @media(max-width:768px){
-          .hamburger{display:flex;position:fixed;top:14px;left:14px;z-index:150;background:#12121e;border:1px solid #2d2d3d;border-radius:10px;padding:8px 10px;align-items:center;justify-content:center;color:#a78bfa;font-size:20px}
-          .sidebar{position:fixed!important;left:-260px!important;top:0;height:100%;z-index:140;transition:left .3s ease!important}
+          .hamburger{display:flex;position:fixed;top:calc(14px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left));z-index:150;background:#12121e;border:1px solid #2d2d3d;border-radius:10px;padding:8px 10px;align-items:center;justify-content:center;color:#a78bfa;font-size:20px}
+          .sidebar{position:fixed!important;left:-260px!important;top:0;height:100%;z-index:140;transition:left .3s ease!important;padding-top:env(safe-area-inset-top)!important}
           .sidebar.open{left:0!important}
           .sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:130;backdrop-filter:blur(3px)}
-          .main-content{padding:20px 16px!important;padding-top:60px!important}
+          .main-content{padding:20px 16px!important;padding-top:calc(60px + env(safe-area-inset-top))!important}
           .grid2{grid-template-columns:1fr!important}
           .stats-grid{grid-template-columns:1fr 1fr!important}
           .chart-grid{grid-template-columns:1fr!important}
