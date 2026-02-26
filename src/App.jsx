@@ -716,9 +716,9 @@ function DebtModal({ debt:d, onClose, onPay, onDelete, fmt, fmtDate }) {
           </div>
           <button onClick={onClose} style={{ background:"none",border:"none",color:"#475569",fontSize:26,lineHeight:1 }}>×</button>
         </div>
-        <div style={{ display:"flex", gap:20, alignItems:"center", marginBottom:24, background:"#0d0d17", borderRadius:16, padding:"20px" }}>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:16, alignItems:"center", justifyContent:"center", marginBottom:24, background:"#0d0d17", borderRadius:16, padding:"20px" }}>
           <Donut3D pct={pct}/>
-          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:12 }}>
+          <div style={{ flex:1, minWidth:180, display:"flex", flexDirection:"column", gap:10 }}>
             {[{label:"Deuda inicial",value:fmt(d.total),color:"#94a3b8",icon:"◈",bg:"#1a1a2e"},{label:"Restante",value:fmt(d.remaining),color:"#fb923c",icon:"↓",bg:"#1f120a"},{label:"Pagado",value:fmt(d.paid),color:"#4ade80",icon:"↑",bg:"#0a1f0a"}].map((s,i)=>(
               <div key={i} style={{ background:s.bg, border:`1px solid ${s.color}22`, borderRadius:10, padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <div><div style={{ fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:".06em",fontWeight:700 }}>{s.label}</div><div style={{ fontSize:16,fontWeight:700,color:s.color,marginTop:2 }}>{s.value}</div></div>
