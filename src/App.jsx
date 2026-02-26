@@ -421,12 +421,17 @@ export default function App() {
                   <div className="card">
                     <div style={{ fontSize:13, fontWeight:600, color:"#475569", marginBottom:16, textTransform:"uppercase", letterSpacing:".06em" }}>Estado de deudas</div>
                     {portfolio.debts.map(d => {
-                      const pct = ((d.total-d.remaining)/d.total)*100;
+                      const totalConIntereses = d.plan.reduce((s,r)=>s+r.payment,0);
+                      const pendiente = Math.max(totalConIntereses - d.paid, 0);
+                      const pct = Math.min((d.paid/totalConIntereses)*100, 100);
                       return (
                         <div key={d.id} style={{ marginBottom:14 }}>
                           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, fontSize:13 }}>
                             <span style={{ color:"#e2e8f0", fontWeight:500 }}>{d.name}</span>
-                            <span style={{ color:"#fb923c" }}>{fmt(d.remaining)} restante</span>
+                            <div style={{ textAlign:"right" }}>
+                              <div style={{ color:"#fb923c" }}>{fmt(pendiente)} pendiente</div>
+                              <div style={{ fontSize:11,color:"#334155" }}>de {fmt(totalConIntereses)} total</div>
+                            </div>
                           </div>
                           <div className="progress-bar"><div className="progress-fill" style={{ width:`${pct}%`, background:"linear-gradient(90deg,#fb923c,#a78bfa)" }}/></div>
                           <div style={{ fontSize:11, color:"#475569", marginTop:4 }}>{pct.toFixed(1)}% pagado · {d.plan.length} meses plan</div>
@@ -525,7 +530,10 @@ export default function App() {
                 ) : (
                   <div style={{ display:"flex",flexDirection:"column",gap:14 }}>
                     {portfolio.debts.map(d => {
-                      const pct = ((d.total-d.remaining)/d.total)*100;
+                      const totalConIntereses = d.plan.reduce((s,r)=>s+r.payment,0);
+                      const pendiente = Math.max(totalConIntereses - d.paid, 0);
+                      const pct = Math.min((d.paid/totalConIntereses)*100, 100);
+                      const liquidada = d.remaining === 0;
                       return (
                         <div key={d.id} className="debt-card" onClick={()=>setSelectedDebt(d)}>
                           <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12 }}>
@@ -534,11 +542,11 @@ export default function App() {
                               <div style={{ fontSize:12,color:"#475569",marginTop:2 }}>{d.interest>0?`${d.interest}% anual`:"Sin interés"} · {fmt(d.payment)}/mes</div>
                             </div>
                             <div style={{ textAlign:"right" }}>
-                              <div style={{ fontSize:18,fontWeight:700,color:d.remaining===0?"#4ade80":"#fb923c" }}>{fmt(d.remaining)}</div>
-                              <div style={{ fontSize:11,color:"#475569" }}>de {fmt(d.total)}</div>
+                              <div style={{ fontSize:18,fontWeight:700,color:liquidada?"#4ade80":"#fb923c" }}>{fmt(pendiente)}</div>
+                              <div style={{ fontSize:11,color:"#475569" }}>de {fmt(totalConIntereses)} total</div>
                             </div>
                           </div>
-                          <div className="progress-bar"><div className="progress-fill" style={{ width:`${pct}%`,background:d.remaining===0?"#4ade80":"linear-gradient(90deg,#fb923c,#a78bfa)" }}/></div>
+                          <div className="progress-bar"><div className="progress-fill" style={{ width:`${pct}%`,background:liquidada?"#4ade80":"linear-gradient(90deg,#fb923c,#a78bfa)" }}/></div>
                           <div style={{ display:"flex",justifyContent:"space-between",marginTop:8,fontSize:12,color:"#475569" }}>
                             <span>{pct.toFixed(1)}% pagado</span>
                             <span style={{ color:"#a78bfa" }}>Ver plan →</span>
@@ -702,7 +710,10 @@ function Donut3D({ pct }) {
 /* ── Debt Modal ── */
 function DebtModal({ debt:d, onClose, onPay, onDelete, fmt, fmtDate }) {
   const [payAmt, setPayAmt] = useState(String(d.payment));
-  const pct = Math.min((d.paid/d.total)*100, 100);
+  // Total real = capital + todos los intereses del plan
+  const totalConIntereses = d.plan.reduce((s,r)=>s+r.payment, 0);
+  const pendiente = Math.max(totalConIntereses - d.paid, 0);
+  const pct = totalConIntereses > 0 ? Math.min((d.paid/totalConIntereses)*100, 100) : 0;
   let cumPaid=0;
   const planWithStatus = d.plan.map(row => { cumPaid+=row.payment; return { ...row, isDone: d.paid >= cumPaid-0.005 }; });
   const paidMonths = planWithStatus.filter(r=>r.isDone).length;
@@ -712,16 +723,28 @@ function DebtModal({ debt:d, onClose, onPay, onDelete, fmt, fmtDate }) {
         <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24 }}>
           <div>
             <div style={{ fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800,color:"#f1f5f9" }}>{d.name}</div>
-            <div style={{ fontSize:13,color:"#475569",marginTop:3 }}>Plan de pago · <span style={{ color:"#a78bfa",fontWeight:600 }}>{d.plan.length} meses</span>{paidMonths>0&&<span style={{ color:"#4ade80",marginLeft:8 }}>· {paidMonths} cubiertos</span>}</div>
+            <div style={{ fontSize:13,color:"#475569",marginTop:3 }}>
+              Plan de pago · <span style={{ color:"#a78bfa",fontWeight:600 }}>{d.plan.length} meses</span>
+              {d.interest>0 && <span style={{ color:"#f87171",marginLeft:8 }}>· {d.interest}% anual</span>}
+              {paidMonths>0 && <span style={{ color:"#4ade80",marginLeft:8 }}>· {paidMonths} cubiertos</span>}
+            </div>
           </div>
           <button onClick={onClose} style={{ background:"none",border:"none",color:"#475569",fontSize:26,lineHeight:1 }}>×</button>
         </div>
         <div style={{ display:"flex", flexWrap:"wrap", gap:16, alignItems:"center", justifyContent:"center", marginBottom:24, background:"#0d0d17", borderRadius:16, padding:"20px" }}>
           <Donut3D pct={pct}/>
           <div style={{ flex:1, minWidth:180, display:"flex", flexDirection:"column", gap:10 }}>
-            {[{label:"Deuda inicial",value:fmt(d.total),color:"#94a3b8",icon:"◈",bg:"#1a1a2e"},{label:"Restante",value:fmt(d.remaining),color:"#fb923c",icon:"↓",bg:"#1f120a"},{label:"Pagado",value:fmt(d.paid),color:"#4ade80",icon:"↑",bg:"#0a1f0a"}].map((s,i)=>(
+            {[
+              {label:"Total a pagar",value:fmt(totalConIntereses),sub:`Capital: ${fmt(d.total)}`,color:"#94a3b8",icon:"◈",bg:"#1a1a2e"},
+              {label:"Pendiente",value:fmt(pendiente),sub:null,color:"#fb923c",icon:"↓",bg:"#1f120a"},
+              {label:"Pagado",value:fmt(d.paid),sub:null,color:"#4ade80",icon:"↑",bg:"#0a1f0a"}
+            ].map((s,i)=>(
               <div key={i} style={{ background:s.bg, border:`1px solid ${s.color}22`, borderRadius:10, padding:"10px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <div><div style={{ fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:".06em",fontWeight:700 }}>{s.label}</div><div style={{ fontSize:16,fontWeight:700,color:s.color,marginTop:2 }}>{s.value}</div></div>
+                <div>
+                  <div style={{ fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:".06em",fontWeight:700 }}>{s.label}</div>
+                  <div style={{ fontSize:16,fontWeight:700,color:s.color,marginTop:2 }}>{s.value}</div>
+                  {s.sub && <div style={{ fontSize:10,color:"#334155",marginTop:2 }}>{s.sub}</div>}
+                </div>
                 <span style={{ fontSize:20,color:s.color,opacity:.5 }}>{s.icon}</span>
               </div>
             ))}
